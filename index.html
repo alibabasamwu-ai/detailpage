@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>詳情內頁產生器 · 台灣商家的阿里巴巴國際站詳情頁工具</title>
+<meta name="description" content="幫助台灣商家在幾分鐘內建立專業的阿里巴巴國際站詳情內頁：45 款官方版型、逐格編輯、即時預覽，一鍵複製可貼上後台的 HTML">
+<style>
+  :root{
+    /* ---- seed tokens ---- */
+    --seed-bg:#fef8f3;
+    --seed-fg:#12233f;
+    --seed-primary:#ff6f1a;
+    --seed-accent:#0c2a5e;
+    --seed-surface:#ffffff;
+    --seed-radius:16px;
+
+    /* ---- derived ---- */
+    --ink:var(--seed-fg);
+    --ink-soft:color-mix(in srgb, var(--seed-fg) 62%, #ffffff);
+    --ink-faint:color-mix(in srgb, var(--seed-fg) 42%, #ffffff);
+    --navy:var(--seed-accent);
+    --navy-soft:color-mix(in srgb, var(--seed-accent) 72%, #ffffff);
+    --brand:var(--seed-primary);
+    --brand-strong:color-mix(in srgb, var(--seed-primary) 82%, #b23c00);
+    --brand-tint:color-mix(in srgb, var(--seed-primary) 12%, var(--seed-surface));
+    --brand-tint-2:color-mix(in srgb, var(--seed-primary) 22%, var(--seed-surface));
+    --bg:var(--seed-bg);
+    --surface:var(--seed-surface);
+    --surface-2:color-mix(in srgb, var(--seed-accent) 4%, var(--seed-surface));
+    --line:color-mix(in srgb, var(--seed-accent) 14%, var(--seed-surface));
+    --line-soft:color-mix(in srgb, var(--seed-accent) 8%, var(--seed-surface));
+    --shadow-sm:0 2px 10px color-mix(in srgb, var(--seed-accent) 12%, transparent);
+    --shadow-md:0 14px 40px color-mix(in srgb, var(--seed-accent) 16%, transparent);
+    --shadow-lg:0 30px 70px color-mix(in srgb, var(--seed-accent) 22%, transparent);
+    --r-lg:calc(var(--seed-radius) * 1.5);
+    --r-md:var(--seed-radius);
+    --r-sm:calc(var(--seed-radius) * 0.55);
+    --maxw:1160px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    line-break:strict;
+    word-break:normal;
+    overflow-wrap:break-word;
+  }
+  a{color:inherit;text-decoration:none}
+  h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-0.01em;text-wrap:balance}
+  p{margin:0;text-wrap:pretty}
+  /* keep a Chinese phrase on one line so it never breaks mid-word */
+  .nb{white-space:nowrap}
+  img{max-width:100%;display:block}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;font-weight:700;letter-spacing:.08em;
+    color:var(--brand-strong);text-transform:uppercase;
+    background:var(--brand-tint);border:1px solid var(--brand-tint-2);
+    padding:6px 14px;border-radius:999px;
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--brand)}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:15px;font-weight:700;font-family:inherit;
+    padding:14px 26px;border-radius:999px;border:0;cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
+    color:#fff;box-shadow:0 10px 26px color-mix(in srgb, var(--brand) 42%, transparent);
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 34px color-mix(in srgb, var(--brand) 52%, transparent)}
+  .btn-ghost{background:transparent;color:var(--navy);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--brand);color:var(--brand-strong);transform:translateY(-2px)}
+  .btn-light{background:#fff;color:var(--brand-strong)}
+  .btn-light:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+
+  /* ---------- Nav ---------- */
+  header.nav{
+    position:sticky;top:0;z-index:50;
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:saturate(150%) blur(14px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .nav-inner{display:flex;align-items:center;gap:20px;height:70px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:18px;color:var(--navy);letter-spacing:-.02em}
+  .brand .logo{
+    width:38px;height:38px;border-radius:11px;flex:none;
+    background:linear-gradient(135deg,var(--brand),var(--brand-strong));
+    display:grid;place-items:center;box-shadow:0 6px 16px color-mix(in srgb,var(--brand) 40%, transparent);
+  }
+  .nav-links{display:flex;gap:6px;margin-left:auto}
+  .nav-links a{font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:9px 14px;border-radius:10px;transition:color .15s,background .15s}
+  .nav-links a:hover{color:var(--navy);background:var(--surface-2)}
+  .nav-cta{margin-left:8px}
+  .nav-toggle{display:none}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;padding:74px 0 90px;overflow:hidden}
+  .hero::before{
+    content:"";position:absolute;inset:0;z-index:-2;
+    background:
+      radial-gradient(1100px 520px at 84% -8%, color-mix(in srgb,var(--brand) 20%, transparent), transparent 60%),
+      radial-gradient(820px 520px at 6% 12%, color-mix(in srgb,var(--navy) 12%, transparent), transparent 58%);
+  }
+  .hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center}
+  .hero h1{
+    font-size:clamp(34px,4.4vw,56px);font-weight:850;color:var(--navy);
+    margin:20px 0 0;letter-spacing:-0.02em;
+  }
+  .hero h1 .hl{position:relative;color:var(--brand-strong);white-space:nowrap}
+  .hero h1 .hl::after{
+    content:"";position:absolute;left:-2%;right:-2%;bottom:6px;height:14px;z-index:-1;
+    background:color-mix(in srgb,var(--brand) 30%, transparent);border-radius:6px;
+  }
+  .hero .lead{font-size:clamp(16px,1.5vw,19px);color:var(--ink-soft);margin-top:22px;max-width:520px}
+  .hero-actions{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap}
+  .hero-trust{display:flex;gap:26px;margin-top:34px;flex-wrap:wrap}
+  .hero-trust .item{display:flex;flex-direction:column}
+  .hero-trust .n{font-size:26px;font-weight:850;color:var(--navy);letter-spacing:-.02em}
+  .hero-trust .l{font-size:13px;color:var(--ink-faint);font-weight:600;margin-top:2px}
+
+  /* Hero mock (SVG-driven tool preview) */
+  .hero-visual{position:relative}
+  .mock{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-lg);overflow:hidden;transform:rotate(.4deg);
+  }
+  .mock-bar{display:flex;align-items:center;gap:7px;padding:12px 16px;background:var(--navy);}
+  .mock-bar .d{width:11px;height:11px;border-radius:50%;background:color-mix(in srgb,#fff 34%, var(--navy))}
+  .mock-bar .d.r{background:var(--brand)}
+  .mock-bar .t{margin-left:10px;font-size:12px;color:color-mix(in srgb,#fff 82%, var(--navy));font-weight:600}
+  .mock-body{display:grid;grid-template-columns:1fr 1fr;min-height:340px}
+  .mock-left{padding:16px;border-right:1px solid var(--line);background:var(--surface-2)}
+  .mock-tplcard{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+  .mock-tplcard.on{border-color:var(--brand);box-shadow:0 0 0 2px color-mix(in srgb,var(--brand) 26%, transparent)}
+  .mock-tplcard .sw{width:34px;height:34px;border-radius:8px;flex:none}
+  .mock-tplcard .ln{flex:1}
+  .mock-tplcard .ln i{display:block;height:7px;border-radius:4px;background:var(--line);margin-bottom:6px}
+  .mock-tplcard .ln i.s{width:60%}
+  .mock-right{padding:16px;background:#eef1f6}
+  .float-chip{
+    position:absolute;background:#fff;border:1px solid var(--line);border-radius:12px;
+    box-shadow:var(--shadow-md);padding:11px 15px;display:flex;align-items:center;gap:10px;
+    font-size:13px;font-weight:700;color:var(--navy);
+  }
+  .float-chip .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--brand-tint);color:var(--brand-strong);flex:none}
+  .float-chip.a{top:-18px;left:-22px;animation:floaty 5s ease-in-out infinite}
+  .float-chip.b{bottom:24px;right:-26px;animation:floaty 5s ease-in-out infinite .8s}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+  /* logos strip */
+  .strip{border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);background:color-mix(in srgb,var(--surface) 70%, var(--bg))}
+  .strip-inner{display:flex;align-items:center;gap:30px;flex-wrap:wrap;padding:22px 0;justify-content:center}
+  .strip .lab{font-size:13px;font-weight:700;color:var(--ink-faint);letter-spacing:.04em}
+  .strip .tag{font-size:14px;font-weight:700;color:var(--navy-soft);display:flex;align-items:center;gap:8px}
+  .strip .tag svg{color:var(--brand)}
+
+  /* ---------- Section base ---------- */
+  section{padding:86px 0}
+  .sec-head{max-width:660px;margin:0 auto 54px;text-align:center}
+  .sec-head h2{font-size:clamp(28px,3vw,40px);font-weight:850;color:var(--navy);margin-top:16px}
+  .sec-head p{font-size:17px;color:var(--ink-soft);margin-top:16px}
+
+  /* ---------- Pain ---------- */
+  .pain{background:var(--surface-2)}
+  .pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .pain-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+    padding:28px 26px;box-shadow:var(--shadow-sm);
+  }
+  .pain-card .n{font-size:14px;font-weight:800;color:color-mix(in srgb,var(--brand) 70%, var(--ink-faint));letter-spacing:.1em}
+  .pain-card h3{font-size:19px;color:var(--navy);margin:14px 0 10px}
+  .pain-card p{font-size:14.5px;color:var(--ink-soft)}
+  .pain-card .ic{width:46px;height:46px;border-radius:12px;background:var(--brand-tint);color:var(--brand-strong);display:grid;place-items:center;margin-bottom:6px}
+
+  /* ---------- 作法 steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:34px;position:relative}
+  .step{
+    position:relative;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--r-md);padding:28px 22px;box-shadow:var(--shadow-sm);
+  }
+  .step .num{
+    width:44px;height:44px;border-radius:13px;display:grid;place-items:center;
+    font-size:19px;font-weight:850;color:#fff;margin:0 auto 18px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-strong));
+    box-shadow:0 8px 18px color-mix(in srgb,var(--brand) 38%, transparent);
+  }
+  .step h3{font-size:17.5px;color:var(--navy);margin-bottom:9px}
+  .step p{font-size:14px;color:var(--ink-soft)}
+  .step .arrow{position:absolute;top:40px;right:-29px;width:22px;height:22px;color:color-mix(in srgb,var(--brand) 55%, transparent);z-index:2}
+  .step .arrow svg{width:22px;height:22px;display:block}
+  .step:last-child .arrow{display:none}
+
+  /* ---------- 工具介紹 features ---------- */
+  .features{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+  .features::before{content:"";position:absolute;inset:0;z-index:0;
+    background:radial-gradient(700px 400px at 88% 6%, color-mix(in srgb,var(--brand) 26%, transparent), transparent 60%);}
+  .features .wrap{position:relative;z-index:1}
+  .features .sec-head h2{color:#fff}
+  .features .sec-head p{color:color-mix(in srgb,#fff 78%, var(--navy))}
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .feat{
+    background:color-mix(in srgb,#fff 7%, var(--navy));
+    border:1px solid color-mix(in srgb,#fff 14%, transparent);
+    border-radius:var(--r-md);padding:26px 24px;transition:transform .18s,border-color .18s,background .18s;
+  }
+  .feat:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--brand) 60%, transparent);background:color-mix(in srgb,#fff 10%, var(--navy))}
+  .feat .ic{width:48px;height:48px;border-radius:13px;background:color-mix(in srgb,var(--brand) 22%, transparent);color:#ffb27a;display:grid;place-items:center;margin-bottom:18px}
+  .feat h3{font-size:18px;color:#fff;margin-bottom:9px}
+  .feat p{font-size:14px;color:color-mix(in srgb,#fff 74%, var(--navy))}
+  .feat .badge{display:inline-block;margin-top:14px;font-size:12px;font-weight:800;color:#ffcda8;background:color-mix(in srgb,var(--brand) 22%, transparent);padding:4px 12px;border-radius:999px}
+
+  /* ---------- 工具使用 usage ---------- */
+  .usage-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:56px;align-items:center}
+  .usage-list{display:flex;flex-direction:column;gap:8px}
+  .u-item{display:flex;gap:16px;padding:18px;border-radius:var(--r-md);border:1px solid transparent;transition:border-color .15s,background .15s}
+  .u-item:hover{border-color:var(--line);background:var(--surface)}
+  .u-item .k{
+    width:38px;height:38px;flex:none;border-radius:10px;display:grid;place-items:center;
+    font-weight:850;font-size:15px;background:var(--brand-tint);color:var(--brand-strong);
+  }
+  .u-item h3{font-size:16.5px;color:var(--navy);margin-bottom:5px}
+  .u-item p{font-size:14px;color:var(--ink-soft)}
+  .u-item code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:13px;color:var(--brand-strong);font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .usage-visual{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-md);overflow:hidden}
+  .usage-visual .cap{padding:12px 18px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+  .paste-guide{margin-top:44px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:30px 32px;box-shadow:var(--shadow-sm)}
+  .paste-guide-hd{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--line-soft)}
+  .paste-guide-hd .pg-ic{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--brand-tint);color:var(--brand-strong)}
+  .paste-guide-hd b{display:block;color:var(--navy);font-size:18px;font-weight:800}
+  .paste-guide-hd span{font-size:14px;color:var(--ink-faint)}
+  .paste-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .pg-step{display:flex;gap:14px;align-items:flex-start}
+  .pg-step .pg-num{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:850;font-size:15px;color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-strong));box-shadow:0 6px 14px color-mix(in srgb,var(--brand) 34%, transparent)}
+  .pg-step h4{margin:2px 0 6px;font-size:15.5px;color:var(--navy);font-weight:750}
+  .pg-step p{font-size:14px;color:var(--ink-soft);line-height:1.7}
+  .pg-step code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:13px;color:var(--brand-strong);font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  @media(max-width:700px){.paste-steps{grid-template-columns:1fr;gap:16px}}
+
+  /* ---------- 初衷 story ---------- */
+  .story{background:linear-gradient(180deg, var(--surface-2), var(--bg))}
+  .story-card{
+    max-width:900px;margin:0 auto;background:var(--surface);
+    border:1px solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-md);padding:52px 56px;position:relative;overflow:hidden;
+  }
+  .story-card::before{
+    content:"“";position:absolute;top:-30px;left:26px;font-size:180px;line-height:1;
+    color:var(--brand-tint-2);font-family:Georgia,serif;font-weight:700;
+  }
+  .story-card .eyebrow{margin-bottom:22px}
+  .story-card h2{font-size:clamp(24px,2.6vw,32px);color:var(--navy);margin-bottom:24px}
+  .story-p{font-size:16.5px;line-height:2;color:var(--ink-soft);margin-bottom:18px;position:relative;text-align:justify;text-justify:inter-character;text-wrap:normal;letter-spacing:.01em}
+  .story-p strong{color:var(--navy);font-weight:750}
+  .story-note{display:flex;gap:16px;align-items:flex-start;margin-top:26px;padding:20px 22px;background:var(--brand-tint);border:1px solid var(--brand-tint-2);border-left:4px solid var(--brand);border-radius:var(--r-md)}
+  .story-note-ic{flex:none;width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:#fff;color:var(--brand-strong);box-shadow:0 4px 12px color-mix(in srgb,var(--brand) 26%, transparent)}
+  .story-note-txt b{display:block;color:var(--navy);font-size:16px;font-weight:800;margin-bottom:6px}
+  .story-note-txt span{font-size:14.5px;color:var(--ink-soft);line-height:1.75}
+  .story-sign{display:flex;align-items:center;gap:14px;margin-top:30px;padding-top:26px;border-top:1px solid var(--line)}
+  .story-sign .av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-strong));display:grid;place-items:center;color:#fff;font-weight:850;font-size:20px}
+  .story-sign .who b{display:block;color:var(--navy);font-size:15.5px}
+  .story-sign .who span{font-size:13.5px;color:var(--ink-faint)}
+
+  /* ---------- CTA ---------- */
+  .cta-band{padding:34px 0 96px}
+  .cta-inner{
+    position:relative;overflow:hidden;
+    background:linear-gradient(135deg,var(--brand) 0%, var(--brand-strong) 62%, color-mix(in srgb,var(--navy) 55%, var(--brand-strong)) 100%);
+    border-radius:var(--r-lg);padding:64px 56px;text-align:center;color:#fff;
+    box-shadow:var(--shadow-lg);
+  }
+  .cta-inner::after{content:"";position:absolute;inset:0;z-index:0;opacity:.5;
+    background:radial-gradient(500px 300px at 12% 120%, rgba(255,255,255,.28), transparent 60%);}
+  .cta-inner > *{position:relative;z-index:1}
+  .cta-inner h2{font-size:clamp(26px,3vw,38px);font-weight:850;margin-bottom:16px}
+  .cta-inner p{font-size:17px;color:rgba(255,255,255,.92);max-width:560px;margin:0 auto 30px}
+  .cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--navy);color:color-mix(in srgb,#fff 72%, var(--navy));padding:52px 0 34px}
+  .foot-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;align-items:flex-start}
+  .foot-brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:18px;color:#fff}
+  .foot-brand .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-strong));display:grid;place-items:center}
+  footer p{font-size:13.5px;margin-top:14px;max-width:320px}
+  .foot-cols{display:flex;gap:56px;flex-wrap:wrap}
+  .foot-col h4{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,#fff 55%, var(--navy));margin:0 0 14px}
+  .foot-col a{display:block;font-size:14px;color:color-mix(in srgb,#fff 82%, var(--navy));margin-bottom:10px;transition:color .15s}
+  .foot-col a:hover{color:var(--brand)}
+  .foot-bottom{margin-top:40px;padding-top:22px;border-top:1px solid color-mix(in srgb,#fff 12%, transparent);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease, transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:960px){
+    .hero-grid{grid-template-columns:1fr;gap:44px}
+    .hero-visual{max-width:560px;margin:0 auto}
+    .pain-grid{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr 1fr}
+    .step .arrow{display:none}
+    .feat-grid{grid-template-columns:1fr 1fr}
+    .usage-grid{grid-template-columns:1fr;gap:36px}
+    .nav-links{
+      display:none;position:absolute;top:70px;left:0;right:0;flex-direction:column;
+      background:var(--surface);border-bottom:1px solid var(--line);padding:12px 24px;gap:2px;box-shadow:var(--shadow-md);
+    }
+    .nav-links.open{display:flex}
+    .nav-links a{padding:12px}
+    .nav-cta{display:none}
+    .nav-toggle{display:grid;place-items:center;margin-left:auto;width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--navy);cursor:pointer}
+  }
+  @media(max-width:560px){
+    section{padding:60px 0}
+    .steps,.feat-grid{grid-template-columns:1fr}
+    .story-card{padding:36px 26px}
+    .cta-inner{padding:44px 26px}
+    .hero{padding:48px 0 64px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="logo" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5V9H4V6.5Z" fill="#fff"/><path d="M4 11h16v6.5A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5V11Z" fill="#fff" opacity=".6"/></svg>
+      </span>
+      詳情內頁產生器
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#pain">痛點</a>
+      <a href="#how">快速更新作法</a>
+      <a href="#features">工具介紹</a>
+      <a href="#usage">工具使用</a>
+      <a href="#story">設計初衷</a>
+    </nav>
+    <a class="btn btn-primary nav-cta" href="tool/" target="_blank" rel="noopener">免費開始使用</a>
+    <button class="nav-toggle" id="navToggle" aria-label="選單">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow"><span class="dot"></span>台灣商家 · 阿里巴巴國際站詳情頁工具</span>
+      <h1><span class="nb">五分鐘做好一頁</span><span class="nb hl">專業詳情內頁</span><span class="nb">，不用寫程式碼</span></h1>
+      <p class="lead">從 45 款官方版型直接套用，逐格改文字、換圖片、選主色，即時看到成品滿意了就一鍵複製 HTML，貼回阿里巴巴後台就上線——把過去要外包好幾天的事，變成一杯咖啡的時間</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="tool/" target="_blank" rel="noopener">
+          免費開始使用
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#how">看它怎麼運作</a>
+      </div>
+      <div class="hero-trust">
+        <div class="item"><span class="n">45 款</span><span class="l">官方詳情頁版型</span></div>
+        <div class="item"><span class="n">10 大</span><span class="l">可編輯模組</span></div>
+        <div class="item"><span class="n">750px</span><span class="l">阿里後台標準寬</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="float-chip a">
+        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        即時預覽
+      </div>
+      <div class="float-chip b">
+        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span>
+        一鍵複製 HTML
+      </div>
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="d"></span><span class="d"></span><span class="d r"></span>
+          <span class="t">Alibaba 詳情頁 · 商家自助編輯</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-left">
+            <div class="mock-tplcard on"><span class="sw" style="background:linear-gradient(135deg,#ff6f1a,#b23c00)"></span><span class="ln"><i></i><i class="s"></i></span></div>
+            <div class="mock-tplcard"><span class="sw" style="background:#0c2a5e"></span><span class="ln"><i></i><i class="s"></i></span></div>
+            <div class="mock-tplcard"><span class="sw" style="background:#1a7f4b"></span><span class="ln"><i></i><i class="s"></i></span></div>
+            <div class="mock-tplcard"><span class="sw" style="background:#800020"></span><span class="ln"><i></i><i class="s"></i></span></div>
+          </div>
+          <div class="mock-right">
+            <svg viewBox="0 0 300 320" width="100%" style="display:block" aria-hidden="true">
+              <rect x="0" y="0" width="300" height="320" fill="#ffffff"/>
+              <rect x="18" y="16" width="264" height="20" rx="4" fill="#0c2a5e"/>
+              <rect x="18" y="46" width="264" height="96" rx="6" fill="#f0eae4"/>
+              <path d="M18 118 l40-34 34 26 40-30 52 38 v24 h-166 z" fill="#e2d6ca"/>
+              <circle cx="66" cy="72" r="12" fill="#ffd9bd"/>
+              <rect x="18" y="154" width="126" height="60" rx="6" fill="#fff3ea" stroke="#ffd0ac"/>
+              <rect x="156" y="154" width="126" height="60" rx="6" fill="#fff3ea" stroke="#ffd0ac"/>
+              <rect x="30" y="168" width="60" height="8" rx="4" fill="#ff6f1a"/>
+              <rect x="30" y="184" width="90" height="6" rx="3" fill="#d9c3b0"/>
+              <rect x="168" y="168" width="60" height="8" rx="4" fill="#ff6f1a"/>
+              <rect x="168" y="184" width="90" height="6" rx="3" fill="#d9c3b0"/>
+              <rect x="18" y="226" width="264" height="14" rx="4" fill="#0c2a5e" opacity=".85"/>
+              <rect x="18" y="250" width="80" height="54" rx="6" fill="#eef1f6"/>
+              <rect x="110" y="250" width="80" height="54" rx="6" fill="#eef1f6"/>
+              <rect x="202" y="250" width="80" height="54" rx="6" fill="#eef1f6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STRIP ============ -->
+<div class="strip">
+  <div class="wrap strip-inner">
+    <span class="lab">專為台灣中小企業與外貿賣家打造</span>
+    <span class="tag"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 3 6v6c0 5 3.8 8.6 9 10 5.2-1.4 9-5 9-10V6l-9-4Z"/></svg>免安裝</span>
+    <span class="tag"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>純中文操作</span>
+    <span class="tag"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>完美相容阿里後台</span>
+  </div>
+</div>
+
+<!-- ============ PAIN ============ -->
+<section class="pain" id="pain">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>台灣商家的真實困境</span>
+      <h2 style="white-space:nowrap;width:max-content;max-width:none;position:relative;left:50%;transform:translateX(-50%)">詳情頁，是最影響成交、卻最難自己動手的一頁</h2>
+      <p style="white-space:nowrap;width:max-content;max-width:none;position:relative;left:50%;transform:translateX(-50%)">買家點進商品，第一眼就是詳情內頁但對多數台灣商家來說，要把它做得專業又即時更新，一直卡在三個地方</p>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div class="n">01 · 太慢</div>
+        <h3>外包一改就是好幾天</h3>
+        <p>換一張圖、改一段規格、調一次價格，都得來回等美編與工程，旺季想快速上新反而最卡</p>
+      </div>
+      <div class="pain-card reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18 22 12 16 6M8 6 2 12l6 6"/></svg></div>
+        <div class="n">02 · 太難</div>
+        <h3>不會 HTML，套版就跑掉</h3>
+        <p>網路上抓來的原始碼貼進阿里後台，寬度、圖片、樣式全亂掉，最後只能放棄改回陽春排版</p>
+      </div>
+      <div class="pain-card reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7v7c0 5 4 8 10 10 6-2 10-5 10-10V7L12 2Z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div class="n">03 · 不專業</div>
+        <h3>版面不夠打動海外買家</h3>
+        <p>缺少公司實力、工廠、認證、FAQ 這些關鍵信任區塊，詢盤轉換自然拉不起來</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 作法 / HOW ============ -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>快速更新的作法</span>
+      <h2>把「找人做」變成「自己四步就好」</h2>
+      <p style="white-space:nowrap;width:max-content;max-width:none;position:relative;left:50%;transform:translateX(-50%)">不需要設計師、不需要工程師整個流程都在同一個畫面完成，改到滿意再貼回阿里，隨時想更新就更新</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="num">1</div>
+        <h3>挑一款模版</h3>
+        <p>從 45 款詳情頁版型中點選，右側立刻真實預覽整頁效果</p>
+        <span class="arrow"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="step reveal">
+        <div class="num">2</div>
+        <h3>逐格改內容</h3>
+        <p>展開任一模組，改文字、貼上新的圖片網址就換圖，還能一鍵開關要顯示的區塊</p>
+        <span class="arrow"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="step reveal">
+        <div class="num">3</div>
+        <h3>選你的品牌主色</h3>
+        <p>用選色器或預設色盤換整頁主色，標題框、按鈕即時跟著變，維持品牌一致性</p>
+        <span class="arrow"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="step reveal">
+        <div class="num">4</div>
+        <h3>複製 HTML 貼回阿里</h3>
+        <p>複製 HTML 後，到商品編輯頁選「普通編輯」，點「原始碼 &lt;/&gt;」貼上，再按一次「原始碼」就完成</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 工具介紹 / FEATURES ============ -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow" style="background:color-mix(in srgb,#fff 12%,transparent);border-color:color-mix(in srgb,#fff 20%,transparent);color:#ffcda8"><span class="dot"></span>工具介紹</span>
+      <h2 style="white-space:nowrap;width:max-content;max-width:none;position:relative;left:50%;transform:translateX(-50%)">一頁完整詳情頁該有的，它都內建好了</h2>
+      <p>不只是排版工具，而是把「取信海外買家」的整套區塊模組化，讓你填空就完成</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+        <h3>45 款精選模版</h3>
+        <p>精選模版，點一下即時預覽，挑好直接編輯，不必從零排版</p>
+        <span class="badge">即時真實預覽</span>
+      </div>
+      <div class="feat reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></div>
+        <h3>逐格編輯 10 大模組</h3>
+        <p>規格參數、產品大圖、公司簡介、工廠車間、證書、優勢四格、包裝物流、FAQ、聯絡我們，逐項填寫</p>
+        <span class="badge">填空即完成</span>
+      </div>
+      <div class="feat reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="12" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="13" r="2.5"/><path d="M12 22a10 10 0 1 1 0-20"/></svg></div>
+        <h3>一鍵品牌換色</h3>
+        <p>選色器自選企業配色，整頁主色即時套用，讓詳情頁跟你的品牌一致</p>
+        <span class="badge">品牌一致性</span>
+      </div>
+      <div class="feat reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <h3>即時所見即所得</h3>
+        <p>右側以 750px 阿里標準寬同步預覽，改一個字馬上看到成品，捲動位置也會記住</p>
+        <span class="badge">750px 標準寬</span>
+      </div>
+      <div class="feat reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></div>
+        <h3>複製即貼上後台</h3>
+        <p>輸出乾淨、可直接貼進阿里後台原始碼的 HTML，也能下載整頁 HTML 保存</p>
+        <span class="badge">複製／下載</span>
+      </div>
+      <div class="feat reveal">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="19" cy="15" r="3"/></svg></div>
+        <h3>模組自由開關</h3>
+        <p>用不到的區塊一鍵隱藏，需要的再打開，每個產品都能組出最合適的版面</p>
+        <span class="badge">彈性組版</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 工具使用 / USAGE ============ -->
+<section id="usage">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>工具使用</span>
+      <h2>介面長怎樣？操作有多直覺？</h2>
+      <p>左邊挑版型與編輯、右邊即時預覽、底部一鍵輸出——所有事情都在同一個畫面完成</p>
+    </div>
+    <div class="usage-grid">
+      <div class="usage-list reveal">
+        <div class="u-item">
+          <span class="k">A</span>
+          <div><h3>左側：官方模板庫 / 編輯區</h3><p>先在模板庫挑版型，按「編輯這個模板」進入逐格編輯<br>不喜歡隨時「換一個模板」</p></div>
+        </div>
+        <div class="u-item">
+          <span class="k">B</span>
+          <div><h3>展開模組改文字與換圖</h3><p>點區塊標題展開，直接改文字<br>圖片欄貼上 <code>http</code> 開頭網址就換圖，可增刪列</p></div>
+        </div>
+        <div class="u-item">
+          <span class="k">C</span>
+          <div><h3>底部工具列：主色與輸出</h3><p>選主色後按 <code>複製可貼阿里的 HTML</code>、<code>下載 HTML</code>，或「還原範例」重來</p></div>
+        </div>
+        <div class="u-item">
+          <span class="k">D</span>
+          <div><h3>右側：即時預覽列</h3><p>頂部顯示目前模板、模組數、主色與 750px 標準寬<br>下方就是完整成品畫面</p></div>
+        </div>
+      </div>
+
+      <div class="usage-visual reveal">
+        <div class="cap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>
+          商家自助編輯 · 介面示意
+        </div>
+        <svg viewBox="0 0 560 380" width="100%" style="display:block" aria-hidden="true">
+          <rect width="560" height="380" fill="#f5f7fb"/>
+          <!-- header -->
+          <rect x="0" y="0" width="560" height="34" fill="#0c2a5e"/>
+          <rect x="16" y="12" width="150" height="10" rx="5" fill="#ffffff"/>
+          <rect x="180" y="13" width="200" height="8" rx="4" fill="#ffffff" opacity=".5"/>
+          <!-- left panel -->
+          <rect x="0" y="34" width="250" height="346" fill="#ffffff"/>
+          <rect x="16" y="48" width="218" height="70" rx="8" fill="#fff" stroke="#ff6f1a" stroke-width="2"/>
+          <rect x="24" y="56" width="60" height="54" rx="5" fill="#fff3ea"/>
+          <rect x="94" y="60" width="120" height="8" rx="4" fill="#0c2a5e"/>
+          <rect x="94" y="76" width="90" height="6" rx="3" fill="#c9d2df"/>
+          <rect x="94" y="90" width="60" height="16" rx="8" fill="#ff6f1a"/>
+          <rect x="16" y="126" width="218" height="52" rx="8" fill="#fafbfd" stroke="#e3e8f0"/>
+          <rect x="24" y="134" width="46" height="36" rx="5" fill="#eef1f6"/>
+          <rect x="80" y="140" width="120" height="7" rx="3" fill="#c9d2df"/>
+          <rect x="80" y="154" width="80" height="6" rx="3" fill="#dde3ec"/>
+          <rect x="16" y="186" width="218" height="52" rx="8" fill="#fafbfd" stroke="#e3e8f0"/>
+          <rect x="24" y="194" width="46" height="36" rx="5" fill="#eef1f6"/>
+          <rect x="80" y="200" width="120" height="7" rx="3" fill="#c9d2df"/>
+          <rect x="80" y="214" width="80" height="6" rx="3" fill="#dde3ec"/>
+          <!-- bottom toolbar -->
+          <rect x="0" y="330" width="250" height="50" fill="#fafbfd"/>
+          <rect x="16" y="344" width="70" height="22" rx="6" fill="#fff" stroke="#e3e8f0"/>
+          <circle cx="27" cy="355" r="6" fill="#800020"/>
+          <rect x="96" y="344" width="94" height="22" rx="6" fill="#0c9d58"/>
+          <rect x="108" y="352" width="70" height="7" rx="3" fill="#fff"/>
+          <rect x="198" y="344" width="40" height="22" rx="6" fill="#eef1f6"/>
+          <!-- divider -->
+          <rect x="250" y="34" width="1.5" height="346" fill="#e3e8f0"/>
+          <!-- right preview bar -->
+          <rect x="251" y="34" width="309" height="26" fill="#ffffff"/>
+          <rect x="266" y="43" width="70" height="8" rx="4" fill="#0c2a5e"/>
+          <rect x="346" y="43" width="46" height="8" rx="4" fill="#c9d2df"/>
+          <rect x="402" y="43" width="46" height="8" rx="4" fill="#c9d2df"/>
+          <!-- right preview frame -->
+          <rect x="266" y="72" width="278" height="300" rx="6" fill="#ffffff" stroke="#e3e8f0"/>
+          <rect x="282" y="86" width="246" height="18" rx="4" fill="#0c2a5e"/>
+          <rect x="282" y="112" width="246" height="80" rx="6" fill="#f0eae4"/>
+          <path d="M282 176 l44-36 34 24 40-28 60 40 v16 h-178 z" fill="#e2d6ca"/>
+          <circle cx="330" cy="140" r="13" fill="#ffd9bd"/>
+          <rect x="282" y="202" width="118" height="52" rx="6" fill="#fff3ea" stroke="#ffd0ac"/>
+          <rect x="410" y="202" width="118" height="52" rx="6" fill="#fff3ea" stroke="#ffd0ac"/>
+          <rect x="294" y="214" width="56" height="8" rx="4" fill="#ff6f1a"/>
+          <rect x="294" y="230" width="84" height="6" rx="3" fill="#d9c3b0"/>
+          <rect x="422" y="214" width="56" height="8" rx="4" fill="#ff6f1a"/>
+          <rect x="422" y="230" width="84" height="6" rx="3" fill="#d9c3b0"/>
+          <rect x="282" y="266" width="246" height="12" rx="4" fill="#0c2a5e" opacity=".85"/>
+          <rect x="282" y="288" width="76" height="44" rx="6" fill="#eef1f6"/>
+          <rect x="367" y="288" width="76" height="44" rx="6" fill="#eef1f6"/>
+          <rect x="452" y="288" width="76" height="44" rx="6" fill="#eef1f6"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="paste-guide reveal">
+      <div class="paste-guide-hd">
+        <span class="pg-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span>
+        <div><b>做好後，怎麼貼回阿里後台？</b><span>照著三步驟，一分鐘就上線</span></div>
+      </div>
+      <div class="paste-steps">
+        <div class="pg-step">
+          <span class="pg-num">1</span>
+          <div><h4>複製 HTML</h4><p>在工具底部按「複製可貼阿里的 HTML」</p></div>
+        </div>
+        <div class="pg-step">
+          <span class="pg-num">2</span>
+          <div><h4>切到「普通編輯」→ 點原始碼</h4><p>到商品編輯頁選「普通編輯」，點工具列的「原始碼 <code>&lt;/&gt;</code>」按鈕，把 HTML 貼進去</p></div>
+        </div>
+        <div class="pg-step">
+          <span class="pg-num">3</span>
+          <div><h4>再按一次「原始碼」</h4><p>內容就會正常渲染，成品完成</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="story" id="story">
+  <div class="wrap">
+    <div class="story-card reveal">
+      <span class="eyebrow"><span class="dot"></span>我設計這網站的初衷</span>
+      <h2>因為我看見台灣商家，被卡在最不該卡的地方</h2>
+      <p class="story-p">我長期陪著台灣的中小企業與工廠做阿里巴巴國際站他們的產品其實很有競爭力，品質、價格、交期都不輸人，<strong>唯獨在「詳情內頁」這一關反覆卡住</strong>想更新一張圖、補一段公司實力、改個報價，往往得等外包好幾天；自己動手貼 HTML，版面又常常整個跑掉</p>
+      <p class="story-p" style="text-align:left">我看過太多老闆，因為一頁做不出來的詳情頁，白白錯過了旺季的詢盤<br>這件事一直讓我覺得可惜——<strong>好產品不該輸在「來不及呈現」上</strong></p>
+      <p class="story-p">所以我把官方版型與那些真正能取信買家的區塊，全部整理成一個「填空就完成」的工具我的目標很單純：讓任何一位不懂程式的台灣老闆，都能在幾分鐘內，親手做出一頁專業、即時、屬於自己品牌的詳情頁，<strong>把主導權交回商家自己手上</strong></p>
+      <p class="story-p">這個網站，就是想把這份初衷說清楚，工具會一直迭代，但初心不變：<strong>讓台灣的好東西，被世界更快看見</strong></p>
+      <div class="story-note">
+        <span class="story-note-ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21l8.84-8.61a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+        </span>
+        <div class="story-note-txt">
+          <b>這個工具全程免費，未來也會持續更新</b>
+          <span>挑版型、填內容、複製 HTML，通通免費；我也會依商家實際需求，持續新增版型與功能</span>
+        </div>
+      </div>
+      <div class="story-sign">
+        <img class="av" src="assets/sam.jpg" alt="Sam" style="object-fit:cover">
+        <div class="who">
+          <b>Sam</b>
+          <span>阿里巴巴國際站中區高級客戶經理 · 詳情內頁產生器設計人</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<div class="cta-band" id="cta">
+  <div class="wrap">
+    <div class="cta-inner reveal">
+      <h2>今天就替你的產品，做出第一頁專業詳情頁</h2>
+      <p style="white-space:nowrap;text-align:center;max-width:none;margin-left:0;margin-right:0">免安裝、純中文操作、完美相容阿里後台挑一款版型，五分鐘後你就有一頁能貼上線的成品</p>
+      <div class="cta-actions">
+        <a class="btn btn-light" href="tool/" target="_blank" rel="noopener">
+          免費開始使用
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.6)" href="#features">再看看功能</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">
+          <span class="logo" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5V9H4V6.5Z" fill="#fff"/><path d="M4 11h16v6.5A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5V11Z" fill="#fff" opacity=".6"/></svg></span>
+          詳情內頁產生器
+        </div>
+        <p>幫助台灣商家快速建立阿里巴巴國際站詳情內頁<br>自助編輯工具挑版型、填內容、複製 HTML，即刻上線</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>產品</h4>
+          <a href="#features">工具介紹</a>
+          <a href="#usage">工具使用</a>
+          <a href="#how">快速更新作法</a>
+        </div>
+        <div class="foot-col">
+          <h4>關於</h4>
+          <a href="#story">設計初衷</a>
+          <a href="#pain">解決的問題</a>
+          <a href="#cta">開始使用</a>
+        </div>
+        <div class="foot-col">
+          <h4>適用平台</h4>
+          <a href="#top">阿里巴巴國際站</a>
+          <a href="#top">詳情描述後台</a>
+          <a href="#top">750px 標準版面</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 詳情內頁產生器 · 為台灣商家外貿而奮鬥</span>
+      <span>讓台灣的好東西，被世界更快看見</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav
+  var toggle = document.getElementById('navToggle');
+  var links = document.getElementById('navLinks');
+  if(toggle){ toggle.addEventListener('click', function(){ links.classList.toggle('open'); }); }
+  links.addEventListener('click', function(e){ if(e.target.tagName==='A') links.classList.remove('open'); });
+
+  // Scroll reveal
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold:0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+</script>
+</body>
+</html>
