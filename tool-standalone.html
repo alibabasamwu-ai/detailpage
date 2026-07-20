@@ -496,6 +496,10 @@ window.CJMD_DATA = {"templates":[{"name":"详情页-组合1","versionId":4267,"a
       block.setAttribute("data-svid", ref.svId);
       canvas.appendChild(block);
       mountModule(block, m.code, fd, m.jsCode);
+      // Keep a replaced CONTACT US logo inside its box (see fitContactLogos).
+      if (m.classCode === "base_lx" || m.classCode === "base_js") {
+        fitContactLogos(block, fd);
+      }
     });
 
     return canvas;
@@ -1748,6 +1752,145 @@ window.CJMD_DATA = {"templates":[{"name":"详情页-组合1","versionId":4267,"a
   }
 
   /*
+   * Contact-US company-logo fit normaliser.
+   * The official 联系我们 (base_lx / base_js) modules size their demo logo <img>
+   * with a FIXED square width+height (e.g. 100x100, 172x172). The bundled demo
+   * logos are square so they look right, but the moment a seller pastes their
+   * OWN logo — almost always a non-square wordmark — that fixed square STRETCHES
+   * it, so every template shows the replaced logo at a different, distorted size
+   * (the "大小不一致" the user reported). We keep the template's logo footprint
+   * (its frame / box) exactly as designed and only add object-fit:contain, so a
+   * logo of ANY aspect ratio now scales to fit inside the box, centered, with no
+   * distortion. object-fit is already used across these templates and IS
+   * preserved by the export pipeline (sanitizeForAlibaba / finalizeExportMarkup
+   * keep it), so this holds in both the on-screen preview and the pasted output.
+   */
+  /*
+   * Contact-US company-logo fit + fill normaliser.
+   *
+   * PROBLEM 1 (distortion): the official 联系我们 (base_lx / base_js) modules size
+   * their demo logo <img> with a FIXED square width+height (e.g. 100x100). The
+   * bundled demo logos are square so they look right, but a seller's OWN logo —
+   * usually a non-square wordmark — gets STRETCHED into that square, so every
+   * template shows the replaced logo distorted and at a different apparent size.
+   *
+   * PROBLEM 2 (too small): several templates park a small logo box inside a much
+   * larger frame/panel (e.g. cu22: a 120px logo centered in a 240x275 dark
+   * panel), so the logo looks tiny.
+   *
+   * FIX: (a) add object-fit:contain so ANY aspect-ratio logo scales to fit its
+   * box centered, never distorted; (b) when the logo sits in a flex-centered
+   * frame we can safely grow into, enlarge the logo to fill most of that frame
+   * (keeping the aspect ratio via contain). Corner-positioned / absolutely
+   * placed logos are left at their designed size (only the distortion fix
+   * applies) so their layout anchors are not disturbed. object-fit is preserved
+   * by the export pipeline, so this holds in preview AND the pasted output.
+   */
+  function fitContactLogos(block, fd) {
+    if (!block) return;
+    var logos = [];
+    function collect(im) {
+      if (im && logos.indexOf(im) < 0) logos.push(im);
+    }
+    // structural: the logo container's <img>, or an <img> that IS the logo
+    var nodes = block.querySelectorAll(".logo img, img.logo");
+    for (var i = 0; i < nodes.length; i++) collect(nodes[i]);
+    // by field value: covers modules whose logo <img> carries no .logo class
+    var target = fd && fd.companyLogo;
+    if (target) {
+      var imgs = block.querySelectorAll("img");
+      for (var j = 0; j < imgs.length; j++) {
+        var src = imgs[j].getAttribute("src");
+        if (src === target || imgs[j].src === target) collect(imgs[j]);
+      }
+    }
+    function css(el, p) {
+      try { return window.getComputedStyle(el)[p] || ""; } catch (e) { return ""; }
+    }
+    // find the frame we may grow into: the nearest ancestor (not the img) that
+    // carries the .logo class, else the img's direct parent.
+    function frameOf(im) {
+      var n = im.parentNode;
+      while (n && n !== block && n.nodeType === 1) {
+        if (n.classList && n.classList.contains("logo")) return n;
+        n = n.parentNode;
+      }
+      return im.parentNode && im.parentNode.nodeType === 1 ? im.parentNode : null;
+    }
+    logos.forEach(function (im) {
+      // (a) stop the stretch — fit any logo inside its box, centered.
+      var st = im.getAttribute("style") || "";
+      if (!/object-fit\s*:/i.test(st)) {
+        st = st.trim();
+        if (st && st.charAt(st.length - 1) !== ";") st += ";";
+        st += "object-fit:contain;object-position:center;";
+        im.setAttribute("style", st);
+      }
+      // (b) grow into the frame when it is a flex-centered box we can fill safely.
+      var frame = frameOf(im);
+      if (!frame) return;
+      var disp = css(frame, "display").toLowerCase();
+      var flexCentered = /flex/.test(disp)
+        && /center/.test(css(frame, "justifyContent"))
+        && /center/.test(css(frame, "alignItems"));
+      // Some dedicated .logo frames use a solid background as a big visible
+      // "logo card" but center their (small) img with manual margins instead of
+      // flex — e.g. svId 10074's 320x295 teal box holding a 110x110 logo. Treat
+      // that sole-img case as safely enlargeable: promote the frame to flex so
+      // the resized img re-centers cleanly, and drop the now-obsolete margins.
+      var bg0 = css(frame, "backgroundColor");
+      var hasBg = bg0 && bg0 !== "rgba(0, 0, 0, 0)" && bg0 !== "transparent";
+      var soleImgDedicated = !flexCentered
+        && frame.classList && frame.classList.contains("logo")
+        && frame.children.length === 1
+        && frame.firstElementChild === im
+        && hasBg;
+      if (!flexCentered && !soleImgDedicated) return; // corner/shared-cell logos: fit only
+      if (soleImgDedicated) {
+        var fs = frame.getAttribute("style") || "";
+        if (!/display\s*:\s*flex/i.test(fs)) {
+          fs = fs.trim();
+          if (fs && fs.charAt(fs.length - 1) !== ";") fs += ";";
+          fs += "display:flex;align-items:center;justify-content:center;";
+          frame.setAttribute("style", fs);
+        }
+        var mst = im.getAttribute("style") || "";
+        mst = mst.replace(/(^|;)\s*margin(-\w+)?\s*:[^;]*;?/gi, "$1");
+        im.setAttribute("style", mst);
+      }
+      var fw = frame.clientWidth, fh = frame.clientHeight;
+      if (!fw || !fh) return;
+      var minDim = Math.min(fw, fh);
+      var maxDim = Math.max(fw, fh);
+      var aspect = maxDim ? minDim / maxDim : 1; // 1 = square, →0 = wide banner
+      var br = parseFloat(css(frame, "borderTopLeftRadius")) || 0;
+      var isCircle = br >= (minDim / 2 - 6);
+      var isDedicated = frame.classList && frame.classList.contains("logo");
+      var clips = /hidden|clip/.test(css(frame, "overflow"));
+      // circle: if the frame clips overflow, fill it almost fully (the round
+      // frame trims any corner overshoot) so the logo isn't a small dot in a
+      // big circle; otherwise keep to the inscribed square so a square logo's
+      // corners don't poke past the circle. dedicated box: fill it. generic
+      // panel: a compact / near-square panel (e.g. the 240x275 dark card) should
+      // fill boldly like a dedicated box; a wide banner keeps breathing room so
+      // a tall logo doesn't overpower the bar.
+      var panelFactor = aspect >= 0.6 ? 0.9 : 0.72;
+      var factor = isCircle ? (clips ? 0.92 : 0.70) : (isDedicated ? 0.86 : panelFactor);
+      var tgt = Math.round(minDim * factor);
+      var cur = Math.round(im.offsetWidth || 0);
+      if (tgt > cur && tgt > 0) {
+        var s2 = im.getAttribute("style") || "";
+        s2 = s2.replace(/(^|;)\s*width\s*:[^;]*;?/i, "$1")
+               .replace(/(^|;)\s*height\s*:[^;]*;?/i, "$1")
+               .trim();
+        if (s2 && s2.charAt(s2.length - 1) !== ";") s2 += ";";
+        s2 += "width:" + tgt + "px;height:" + tgt + "px;";
+        im.setAttribute("style", s2);
+      }
+    });
+  }
+
+  /*
    * Render directly from a resolved list (see resolveTemplate).
    * options: width, brandColor, origColor.
    * recolor is applied non-destructively at render time (item.fd is preserved),
@@ -1789,6 +1932,11 @@ window.CJMD_DATA = {"templates":[{"name":"详情页-组合1","versionId":4267,"a
       block.setAttribute("data-svid", item.svId);
       canvas.appendChild(block);
       mountModule(block, item.code, fd, item.jsCode);
+      // CONTACT US (联系我们) modules stretch a replaced logo to a fixed square;
+      // fit it inside its box instead so any logo keeps its aspect ratio.
+      if (item.classCode === "base_lx" || item.classCode === "base_js") {
+        fitContactLogos(block, fd);
+      }
     });
     return canvas;
   }
